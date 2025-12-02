@@ -43,38 +43,39 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
             // Sample JSON data mimicking an API response
-            const accommodationData = [
-                {
-                    location: '13 Fairmount Street Lakemba NSW Australia',
-                    type: 'House',
-                    price: '600 per week',
-                    description: '2 bed room house, 1 shower and washroom combined, Kitchen space.',
-                },
-                {
-                    location: '17 Fairmount Street Lakemba NSW Australia',
-                    type: 'Apartment',
-                    price: '830 per week',
-                    description: '2 bed room house, 2 washroom, 1 Shower room, Kitchen space, Living space.',
-                },
-                {
-                    location: '25 Main Street Sydney NSW Australia',
-                    type: 'Studio',
-                    price: '450 per week',
-                    description: 'Compact studio with kitchenette and separate bathroom, perfect for one.',
-                },
-                {
-                    location: '1/10 Green Lane Parramatta NSW Australia',
-                    type: 'Shared Room',
-                    price: '250 per week',
-                    description: 'Single bed in a shared 4-bedroom apartment, all utilities included.',
-                },
-                {
-                    location: '39 Coastal Drive Bondi NSW Australia',
-                    type: 'House',
-                    price: '1200 per week',
-                    description: 'Luxurious 3-bedroom beach house with ocean views and private parking.',
-                },
-            ];
+            const API_URL = 'https://raw.githubusercontent.com/rakibulnahin/promptfest/refs/heads/main/data.json?token=GHSAT0AAAAAADQPI74A24TIP4WTGXWBCX6K2JPCI2Q';
+            const MAX_RETRIES = 5;
+
+            // Helper function for exponential backoff delay
+            const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+            /**
+             * Fetches data with exponential backoff retry logic.
+             * @param {string} url The URL to fetch.
+             * @param {number} retries The number of times to retry.
+             * @returns {Promise<Array>} The parsed JSON data.
+             */
+            async function fetchWithRetry(url, retries = MAX_RETRIES) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return await response.json();
+                    } catch (error) {
+                        if (i === retries - 1) {
+                            console.error("Fetch failed permanently after retries:", error);
+                            throw error; // Re-throw the error to be caught by the caller
+                        }
+                        const backoffTime = Math.pow(2, i) * 1000; // 1s, 2s, 4s, 8s, 16s
+                        // console.log(`Retry attempt ${i + 1} failed. Retrying in ${backoffTime / 1000}s...`);
+                        await delay(backoffTime);
+                    }
+                }
+            }
+
+            console.log()
 
             // Function to render the results into the response div
             const renderResults = (results) => {
@@ -100,10 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 responseDiv.classList.remove('hidden'); // Show the results container
             };
 
-renderResults(accommodationData);
 
             // Function to handle form submission
-            const handleSubmit = (e) => {
+            const handleSubmit = async (e) => {
                 // Prevent the default form submission (which would reload the page)
                 e.preventDefault();
 
@@ -125,11 +125,13 @@ renderResults(accommodationData);
                 // Hide previous results
                 responseDiv.classList.add('hidden'); 
 
-                // 2. Simulate API Call (using setTimeout to mimic network latency)
-                console.log('Simulating API call with payload:', formData);
-
-                setTimeout(() => {
-                    // --- This is where the API response (accommodationData) is processed ---
+                try {
+                    // 2. Make the actual API Call with retry logic
+                    console.log('Fetching listings from API:', API_URL, 'with payload:', formData);
+                    
+                    const accommodationData = await fetchWithRetry(API_URL);
+                    
+                    // 3. Process the response
                     renderResults(accommodationData);
                     
                     // Update message box to successful state, then hide it
@@ -141,7 +143,18 @@ renderResults(accommodationData);
                         messageBox.classList.add('hidden');
                     }, 4000); 
 
-                }, 2000); // 2 second delay for simulation
+                } catch (error) {
+                    // Handle fetch errors
+                    console.error('Failed to load accommodation data:', error);
+                    
+                    messageBox.classList.remove('bg-blue-100', 'text-blue-800');
+                    messageBox.classList.add('bg-red-100', 'text-red-800');
+                    messageBox.querySelector('p').textContent = 'Error fetching listings. Please check the console for network error details.';
+                    
+                    setTimeout(() => {
+                        messageBox.classList.add('hidden');
+                    }, 6000); 
+                }
 
             };
 

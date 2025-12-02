@@ -1,0 +1,32 @@
+[
+  {
+    "location": "13 Fairmount Street Lakemba NSW Australia",
+    "type": "House",
+    "price": "600 per week",
+    "description": "2 bed room house, 1 shower and washroom combined, Kitchen space."
+  },
+  {
+    "location": "17 Fairmount Street Lakemba NSW Australia",
+    "type": "Apartment",
+    "price": "830 per week",
+    "description": "2 bed room house, 2 washroom, 1 Shower room, Kitchen space, Living space."
+  },
+  {
+    "location": "25 Main Street Sydney NSW Australia",
+    "type": "Studio",
+    "price": "450 per week",
+    "description": "Compact studio with kitchenette and separate bathroom, perfect for one."
+  },
+  {
+    "location": "1/10 Green Lane Parramatta NSW Australia",
+    "type": "Shared Room",
+    "price": "250 per week",
+    "description": "Single bed in a shared 4-bedroom apartment, all utilities included."
+  },
+  {
+    "location": "39 Coastal Drive Bondi NSW Australia",
+    "type": "House",
+    "price": "1200 per week",
+    "description": "Luxurious 3-bedroom beach house with ocean views and private parking."
+  }
+]

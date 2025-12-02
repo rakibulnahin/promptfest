@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animated Scroll Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="main.css">
+
+</head>
+<body class="page-wrapper text-slate-900">
+    <!-- WRAPPER FOR HERO HEIGHT -->
+    <div class="hero-shell">
+        <!-- HERO / HEADING -->
+        <header id="hero" class="hero-section">
+            <div
+                id="heroInner"
+                class="hero-inner text-center px-4 md:px-8"
+            >
+                <h1
+                    class="hero-title text-5xl md:text-7xl font-extrabold leading-tight drop-shadow-sm"
+                >
+                    Welcome to
+                    <span class="block text-blue-500">
+                        Home Helper
+                    </span>
+                </h1>
+                <p class="mt-4 text-sm md:text-base text-slate-700 max-w-md mx-auto">
+                    We will find you the best accomodations for you.
+                </p>
+            </div>
+        </header>
+    </div>
+
+    <!-- FORM SECTION -->
+    <main id="formSection" class="form-section px-4">
+        <div
+            id="formWrapper"
+            class="form-wrapper max-w-lg mx-auto bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-10 border border-slate-100"
+        >
+            <h2 class="text-xl font-semibold text-slate-900 mb-6 text-center">
+                Contact Details
+            </h2>
+
+            <form id="inquiryForm" class="space-y-6">
+                <!-- Field 1 -->
+                <div class="form-field">
+                    <label class="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
+                        Full Name
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        class="form-input w-full px-4 py-3 rounded-lg text-slate-900"
+                        placeholder="Eg: Monkey D. Luffy"
+                        value="Luffy"
+                        required
+                    />
+                </div>
+
+                <!-- Field 2 -->
+                <div class="form-field">
+                    <label class="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
+                        Preferred location
+                    </label>
+                    <input
+                        type="text"
+                        id="location"
+                        class="form-input w-full px-4 py-3 rounded-lg text-slate-900"
+                        placeholder="City or Suburb"
+                        value="sydney"
+                        required
+                    />
+                </div>
+
+                <!-- Field 3 -->
+                <div class="form-field">
+                    <label class="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
+                        Preferred Budget per week
+                    </label>
+                    <div style="display: flex;">
+                        <input
+                            type="number"
+                            id="min_budget"
+                            class="form-input w-1/3 px-4 py-3 rounded-lg text-slate-900"
+                            placeholder="Minimum ($)"
+                            value="100"
+                            required
+                        />
+                        <label class="flex w-5 justify-center items-center">-</label>
+                        <input
+                            type="number"
+                            id="max_budget"
+                            class="form-input w-1/3 px-4 py-3 rounded-lg text-slate-900"
+                            placeholder="Maximum ($)"
+                            value="200"
+                            required
+                        />
+                    </div>
+                    
+                </div>
+
+                <!-- Field 4 -->
+                <div class="form-field">
+                    <label class="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
+                        Type of accomodation
+                    </label>
+                    <input
+                        type="text"
+                        id="accomodation"
+                        class="form-input w-full px-4 py-3 rounded-lg text-slate-900"
+                        placeholder="Apartment, House, Mansion etc"
+                        value="House"
+                        required
+                    />
+                </div>
+
+                <!-- Submit -->
+                <div class="form-field pt-2">
+                    <button
+                        type="submit"
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                    >
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+        <!-- Submission Message Display (now for loading/success) -->
+        <div id="messageBox" class="hidden mt-4 p-4 text-sm rounded-lg text-green-800 bg-green-100" role="alert">
+            <p>Form submitted successfully! Searching for listings...</p>
+        </div>
+    </main>
+
+    <!-- Response Container (New element as requested) -->
+    <div id="response" class="flex  w-full mt-8 p-4 bg-white shadow-xl rounded-xl border border-slate-200 max-h-[500px] overflow-y-auto flex flex-wrap gap-4 justify-start ">
+        <!-- Accommodation cards will be inserted here dynamically -->
+        <h2 class="w-full text-2xl font-bold text-slate-700 mb-2 text-left">Available Listings:</h2>
+        <!-- Initial content is just the header, cards will follow -->
+    </div>
+
+    <script src="main.js">
+        
+    </script>
+</body>
+</html>

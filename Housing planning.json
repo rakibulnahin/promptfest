@@ -1,0 +1,845 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "=user-chat",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        160
+      ],
+      "id": "78fd9812-0e50-44e2-b219-fbce382239e3",
+      "name": "Webhook",
+      "webhookId": "cefb93c0-71d1-4d36-bbbd-597319dce079"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-f1db6c.stack.tryrelevance.com/latest/studios/169daf92-f310-403a-bc68-be0583ef3784/trigger_async",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "6a782564-2ea9-49fc-b648-a6e2e60a148c:sk-MTJkNGI1YTctNDUyNy00MjYxLWFjOWQtNWFiNzA0MmMwNDll"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"params\": {\n    \"search_objective\": \"Find me {{ $json.body.requirements }}, {{ $json.body.budget }}. Remember to fill out the agent_name, contact\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        240,
+        160
+      ],
+      "id": "a1cd0694-f008-48e3-8219-0bcf2a0bf712",
+      "name": "HTTP Request",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        576,
+        176
+      ],
+      "id": "446e9fbf-ebaf-4582-9b1b-2b2388681c74",
+      "name": "Wait",
+      "webhookId": "51ccb0a4-38b5-431f-a6e8-d8c078ad00ab"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-f1db6c.stack.tryrelevance.com/latest/studios/{{ $('HTTP Request').item.json.studio_id }}/async_poll/{{ $('HTTP Request').item.json.job_id }}?ending_update_only=true",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\":\"application/json\",\"Authorization\":\"6a782564-2ea9-49fc-b648-a6e2e60a148c:sk-YjFhMTk2MDQtZWJiYy00OWVmLWFiZjctYzMwMGI3YzlmZTZi\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        896,
+        176
+      ],
+      "id": "1f995485-1386-46f0-a684-f6ea7ee9da31",
+      "name": "HTTP Request2",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "inprogress",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ce380555-9bb2-469d-9a76-4deb2ba9b64d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "inprogress"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c2f62e23-2b91-411c-8c71-7b5493b93a26",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3222dfa0-33ea-46cd-909b-dfd7258ef8a4",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "complete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=completed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1184,
+        176
+      ],
+      "id": "e7171633-b9a6-4761-9eae-f35dcf08bc47",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. GET DATA\nconst data = $input.all().map(item => item.json);\n\n// 2. EXTRACT CONTENT\nlet researchedUrls = [];\nlet debugInfo = \"Path not found\";\n\nconst successItem = data.find(d => d.updates);\n\nif (successItem) {\n  const successUpdate = successItem.updates.find(u => u.type === 'chain-success');\n  if (successUpdate) {\n     // We capture the array here\n     researchedUrls = successUpdate.output.output.researched_urls || [];\n     debugInfo = \"Path found, \" + researchedUrls.length + \" items in array.\";\n  } else {\n    debugInfo = \"chain-success object not found in updates\";\n  }\n} else {\n  debugInfo = \"No item with 'updates' found in input\";\n}\n\n// 3. RETURN RAW DATA FOR INSPECTION\n// If researchedUrls is empty, we return the debug info to tell you why\nif (researchedUrls.length === 0) {\n  return [{ json: { error: \"No URLs found\", debug: debugInfo } }];\n}\n\n// Otherwise, return the full text so you can write the correct Regex\nreturn researchedUrls.map(text => ({\n  json: {\n    // This allows you to see exactly what the text looks like in the n8n Output view\n    full_text_preview: text.substring(0, 500) + \"...\", \n    total_length: text.length,\n    // Test if your specific regex works on this specific string\n    has_price_match: /([\\d,]+ per week)/.test(text) \n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        208
+      ],
+      "id": "4d0ed944-e5b2-443d-842c-f91fedca7854",
+      "name": "Code in JavaScript",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code processes ALL incoming items in one function node.\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  // 1. Map to 'full_text_preview'\n  const raw = item.json.full_text_preview || \"\";\n  \n  // 2. Initial Filter: Skip known \"No properties\" or very short strings\n  if (raw.includes(\"No properties listed\") || raw.length < 50) {\n    continue; \n  }\n\n  // ---- PRICE ----\n  const priceMatch = raw.match(/\\$([\\d,]+)\\s*per week/i);\n  const price = priceMatch ? Number(priceMatch[1].replace(/,/g, \"\")) : null;\n\n  // ---- ADDRESS & SUBURB ----\n  const addrMatch = raw.match(/([\\d\\w\\/\\s]+?),\\s*([A-Z\\s]+)\\s+(NSW|VIC|QLD|ACT|SA|WA|TAS)(?:\\s+\\d{4})?/i);\n  \n  const address = addrMatch ? addrMatch[1].replace(/\\n/g, \" \").trim() : null;\n  const suburb = addrMatch ? addrMatch[2].trim() : null;\n  const state = addrMatch ? addrMatch[3].trim() : null;\n\n  // ============================================================\n  //  NEW: SKIP IF DATA IS NULL\n  //  If we didn't find a Price AND we didn't find an Address, \n  //  it is likely a 404 page or a bad listing. Skip it.\n  // ============================================================\n  if (price === null && address === null) {\n    continue;\n  }\n\n  // ---- BEDS, BATHS, PARKING ----\n  const bedMatch = raw.match(/(\\d+)\\s*Bed/i);\n  const bathsMatch = raw.match(/(\\d+)\\s*Bath/i);\n  const parkingMatch = raw.match(/(\\d+)\\s*Parking/i);\n\n  const beds = bedMatch ? Number(bedMatch[1]) : null;\n  const baths = bathsMatch ? Number(bathsMatch[1]) : null;\n  const parking = parkingMatch ? Number(parkingMatch[1]) : null;\n\n  // ---- DEPOSIT TAKEN ----\n  const deposit_taken = /DEPOSIT TAKEN/i.test(raw);\n\n  // ---- INSPECTION TIME ----\n  const inspectionMatch = raw.match(/Inspection.*?(\\b\\d{1,2}\\s\\w{3},\\s[\\d:apm]+)/i);\n  const inspection_datetime = inspectionMatch ? inspectionMatch[1] : null;\n\n  // ---- AGENT + AGENCY ----\n  let agent_name = null;\n  let agency = null;\n\n  // Push structured record\n  results.push({\n    json: {\n      price,\n      address,\n      suburb,\n      state, \n      beds,\n      baths,\n      parking,\n      deposit_taken,\n      inspection_datetime,\n      agent_name,\n      agency,\n      full_text_preview: raw, \n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        208
+      ],
+      "id": "ba301f82-b07c-41dd-a6fa-b42aec762f69",
+      "name": "Code in JavaScript1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the chat text from the Webhook node\nconst text = $('Webhook').first().json.body.budget;\n\n// 2. Define the Regex (looks for digits around 'aud')\nconst regex = /(\\d+)\\s*aud|aud\\s*(\\d+)/i;\nconst match = text.match(regex);\n\nlet maxPrice = Infinity; \n\nif (match) {\n    // match[1] is \"500\" (before aud), match[2] is \"500\" (after aud)\n    const priceString = match[1] || match[2];\n    maxPrice = parseInt(priceString, 10);\n}\n\nconst affordable_listings = items.filter(item => {\n    return item.json.price < maxPrice;\n});\n\n// 6. Return the result to the next node\nreturn affordable_listings;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        208
+      ],
+      "id": "0dd7a5a0-f364-4ab8-87cc-5153c8a4192b",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-f1db6c.stack.tryrelevance.com/latest/agents/trigger",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "6a782564-2ea9-49fc-b648-a6e2e60a148c:sk-YmMxNTk4NTItM2ViNC00OWRmLTlkMzYtNmFmNjk3MjBiOGY1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": {\n    \"role\": \"user\",\n    \"content\": \"Write a cover letter for {{ $('Webhook').item.json.body.name }}, contact is {{ $('Webhook').item.json.body.phone_number }}, requirements is {{ $('Webhook').item.json.body.requirements }}. For this listing {{ $json.address }}, {{ $json.suburb }}, beds {{ $json.beds }}, bath {{ $json.baths }}, inspection date {{ $json.inspection_datetime }}. If any of the information is missing, write in to inquire. Do not ask any questions as all data have been given\"\n  },\n  \"agent_id\": \"27c3f740-2ae7-4f74-98f6-5dcc3bd3f6ac\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2256,
+        208
+      ],
+      "id": "d3a720c8-ab4b-4f39-aba4-127a575528ca",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "inprogress",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ce380555-9bb2-469d-9a76-4deb2ba9b64d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "inprogress"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c2f62e23-2b91-411c-8c71-7b5493b93a26",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3222dfa0-33ea-46cd-909b-dfd7258ef8a4",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "complete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=completed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        2816,
+        192
+      ],
+      "id": "4943a86a-ad20-4fcf-9d15-8ebb8050c709",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-f1db6c.stack.tryrelevance.com/latest/studios/{{ $('HTTP Request1').item.json.job_info.studio_id }}/async_poll/{{ $('HTTP Request1').item.json.job_info.job_id }}?ending_update_only=true",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\":\"application/json\",\"Authorization\":\"6a782564-2ea9-49fc-b648-a6e2e60a148c:sk-YjFhMTk2MDQtZWJiYy00OWVmLWFiZjctYzMwMGI3YzlmZTZi\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2640,
+        208
+      ],
+      "id": "a0799c64-a88b-4a9b-b673-9f418d666012",
+      "name": "HTTP Request3",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2464,
+        208
+      ],
+      "id": "5a6979af-92fd-48d5-ae2f-8f595603db46",
+      "name": "Wait1",
+      "webhookId": "0266a1c6-a8e6-4931-a69c-9d92d06c41ef"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "=data {{ $json.updates[0].output.output.answer }}",
+        "options": {
+          "format": true
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        3104,
+        240
+      ],
+      "id": "9434f7b9-a35f-4037-8fa8-64257a79d81e",
+      "name": "Convert to File"
+    }
+  ],
+  "pinData": {
+    "Code in JavaScript1": [
+      {
+        "json": {
+          "price": 775,
+          "address": "1303/19 Halifax Street",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Tiana Davenport",
+          "agency": "McGrath Hornsby",
+          "listing_raw": "$775 per week \n1303/19 Halifax Street, MACQUARIE PARK NSW 2113\n1 Bed1 Bath1 Parking\nApartment / Unit / Flat\nNew\nTiana DavenportMcGrath Hornsby"
+        }
+      },
+      {
+        "json": {
+          "price": 700,
+          "address": "806/7 Mooltan Ave",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": null,
+          "deposit_taken": true,
+          "inspection_datetime": null,
+          "agent_name": "Sylvia Van Wyk",
+          "agency": "Stone Real Estate Lindfield",
+          "listing_raw": "$700 per week \n806/7 Mooltan Ave, MACQUARIE PARK NSW 2113\n1 Bed1 Bath− Parking\nApartment / Unit / Flat\nDEPOSIT TAKEN\nSylvia Van WykStone Real Estate Lindfield"
+        }
+      },
+      {
+        "json": {
+          "price": 1400,
+          "address": "2502/112 Talavera Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 3,
+          "baths": 2,
+          "parking": 2,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Daniel Hongxin Zhou",
+          "agency": "McConnell Bourn",
+          "listing_raw": "$1400 per week \n2502/112 Talavera Road, MACQUARIE PARK NSW 2113\n3 Beds2 Baths2 Parking\nApartment / Unit / Flat\nDaniel Hongxin ZhouMcConnell Bourn"
+        }
+      },
+      {
+        "json": {
+          "price": 710,
+          "address": "103/2 Saunders Close",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": "3 Dec, 5:15pm",
+          "agent_name": "Bronwen Jeffreys",
+          "agency": "OH Property Group",
+          "listing_raw": "$710 per week \n103/2 Saunders Close, MACQUARIE PARK NSW 2113\n1 Bed1 Bath1 Parking\nApartment / Unit / Flat\nInspectionWed 3 Dec, 5:15pm\nBronwen JeffreysOH Property Group"
+        }
+      },
+      {
+        "json": {
+          "price": 775,
+          "address": "909/6 Saunders Close",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "David Carrieri",
+          "agency": "PIERGE PTY LTD",
+          "listing_raw": "$775 per week \n909/6 Saunders Close, MACQUARIE PARK NSW 2113\n1 Bed1 Bath1 Parking\nDavid CarrieriPIERGE PTY LTD"
+        }
+      },
+      {
+        "json": {
+          "price": 915,
+          "address": "210/9 Peach Tree Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 2,
+          "baths": 2,
+          "parking": 1,
+          "deposit_taken": true,
+          "inspection_datetime": null,
+          "agent_name": null,
+          "agency": null,
+          "listing_raw": "$915 per week \n210/9 Peach Tree Road, MACQUARIE PARK NSW 2113\n2 Beds2 Baths1 Parking\nDEPOSIT TAKEN\nMcGrath Epping"
+        }
+      },
+      {
+        "json": {
+          "price": 840,
+          "address": "208/139 Herring Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 2,
+          "baths": 2,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Lisa Lightfoot",
+          "agency": "Forsyth Real Estate",
+          "listing_raw": "$840 per week \n208/139 Herring Road, MACQUARIE PARK NSW 2113\n2 Beds2 Baths1 Parking\nLisa LightfootForsyth Real Estate"
+        }
+      },
+      {
+        "json": {
+          "price": 590,
+          "address": "8/49 Fontenoy Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 2,
+          "baths": 1,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": "3 Dec, 11:15am",
+          "agent_name": "Leon Cheung",
+          "agency": "Loyal Property Chatswood",
+          "listing_raw": "$590 per week \n8/49 Fontenoy Road, MACQUARIE PARK NSW 2113\n2 Beds1 Bath1 Parking\nInspectionWed 3 Dec, 11:15am\nLeon CheungLoyal Property Chatswood"
+        }
+      },
+      {
+        "json": {
+          "price": 960,
+          "address": "712/2 Cottonwood Crescent",
+          "suburb": "MACQUARIE PARK",
+          "beds": 2,
+          "baths": 2,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": "3 Dec, 12:30pm",
+          "agent_name": "Sammi Truong",
+          "agency": null,
+          "listing_raw": "$960 per week \n712/2 Cottonwood Crescent, MACQUARIE PARK NSW 2113\n2 Beds2 Baths1 Parking\nInspectionWed 3 Dec, 12:30pm\nNew\nSammi Truong"
+        }
+      },
+      {
+        "json": {
+          "price": 460,
+          "address": "2/5 Peach Tree Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Orana Leasing",
+          "agency": null,
+          "listing_raw": "$460 per week \n2/5 Peach Tree Road, MACQUARIE PARK NSW 2113\n1 Bed1 Bath1 Parking\nUpdated\nOrana Leasing"
+        }
+      },
+      {
+        "json": {
+          "price": 720,
+          "address": "/112 Talavera Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": null,
+          "deposit_taken": true,
+          "inspection_datetime": "3 Dec, 11:30am",
+          "agent_name": null,
+          "agency": null,
+          "listing_raw": "$720 per week \n1B/112 Talavera Road, MACQUARIE PARK NSW 2113\n1 Bed1 Bath− Parking\nInspectionWed 3 Dec, 11:30am\nDEPOSIT TAKEN\nTrilogy A Leasing"
+        }
+      },
+      {
+        "json": {
+          "price": 960,
+          "address": "/100 Talavera Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 2,
+          "baths": 2,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Cathy Zhang",
+          "agency": null,
+          "listing_raw": "$960 per week \n2D/100 Talavera Road, MACQUARIE PARK NSW 2113\n2 Beds2 Baths1 Parking\nUpdated\nCathy Zhang"
+        }
+      },
+      {
+        "json": {
+          "price": 1350,
+          "address": "/101 Waterloo Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 3,
+          "baths": 2,
+          "parking": 2,
+          "deposit_taken": false,
+          "inspection_datetime": "6 Dec, 11:00am",
+          "agent_name": null,
+          "agency": null,
+          "listing_raw": "$1350 per week \n903C/101 Waterloo Road, MACQUARIE PARK NSW 2113\n3 Beds2 Baths2 Parking\nInspectionSat 6 Dec, 11:00am\nTrilogy B Leasing"
+        }
+      },
+      {
+        "json": {
+          "price": 850,
+          "address": "/104 Talavera Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": null,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Sammi Truong",
+          "agency": null,
+          "listing_raw": "$850 per week \n1C/104 Talavera Road, MACQUARIE PARK NSW 2113\n1 Bed1 Bath− Parking\nSammi Truong"
+        }
+      },
+      {
+        "json": {
+          "price": 500,
+          "address": "13/10 Lachlan Avenue",
+          "suburb": "MACQUARIE PARK",
+          "beds": null,
+          "baths": null,
+          "parking": null,
+          "deposit_taken": false,
+          "inspection_datetime": "3 Dec, 10:00am",
+          "agent_name": "Viciniti Macquarie Park",
+          "agency": null,
+          "listing_raw": "$500 per week \n13/10 Lachlan Avenue, MACQUARIE PARK NSW 2113\nInspectionWed 3 Dec, 10:00am\nViciniti Macquarie Park"
+        }
+      },
+      {
+        "json": {
+          "price": 750,
+          "address": "10 Cottonwood Crescent",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": 1,
+          "parking": null,
+          "deposit_taken": false,
+          "inspection_datetime": "6 Dec, 11:00am",
+          "agent_name": "Adriano Tassone",
+          "agency": null,
+          "listing_raw": "$750 per week \n1B/2-10 Cottonwood Crescent, MACQUARIE PARK NSW 2113\n1 Bed1 Bath− Parking\nInspectionSat 6 Dec, 11:00am\nAdriano Tassone"
+        }
+      },
+      {
+        "json": {
+          "price": 1250,
+          "address": "502/9 Peach Tree Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": 3,
+          "baths": 2,
+          "parking": 1,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": null,
+          "agency": null,
+          "listing_raw": "$1250 per week \n502/9 Peach Tree Road, MACQUARIE PARK NSW 2113\n3 Beds2 Baths1 Parking\nTrilogy B Leasing"
+        }
+      },
+      {
+        "json": {
+          "price": 1050,
+          "address": "1111/104 Talavera Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": null,
+          "baths": null,
+          "parking": null,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Tamara Clements",
+          "agency": null,
+          "listing_raw": "$1050 per week \n1111/104 Talavera Road, MACQUARIE PARK NSW 2113\nTamara Clements"
+        }
+      },
+      {
+        "json": {
+          "price": 880,
+          "address": "308/139 Herring Road",
+          "suburb": "MACQUARIE PARK",
+          "beds": null,
+          "baths": null,
+          "parking": null,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": "Viciniti Macquarie Park",
+          "agency": null,
+          "listing_raw": "$880 per week \nB308/139 Herring Road, MACQUARIE PARK NSW 2113\nViciniti Macquarie Park"
+        }
+      },
+      {
+        "json": {
+          "price": 850,
+          "address": "/2 Cottonwood Crescent",
+          "suburb": "MACQUARIE PARK",
+          "beds": 1,
+          "baths": null,
+          "parking": null,
+          "deposit_taken": false,
+          "inspection_datetime": null,
+          "agent_name": null,
+          "agency": null,
+          "listing_raw": "$850 per week \n1C/2 Cottonwood Crescent, MACQUARIE PARK NSW 2113\nprev page\n12345\nnext page\nLooking in Macquarie Park?\nFind out the latest median prices, property market data & demographic info.\nSee Macquarie Park Suburb Profile\nMedian rent for units\n1 Bed"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fb49fa34-1238-4d29-83f2-e0f893d65e19",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ff94c4c8e242a268a0ca805cc5447d559e810671dd2546d0db78665a39bbfc4e"
+  },
+  "id": "TXl7C9ZK3z7E0oQ4",
+  "tags": []
+}

@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
             // Sample JSON data mimicking an API response
-            const API_URL = 'https://raw.githubusercontent.com/rakibulnahin/promptfest/refs/heads/main/data.json?token=GHSAT0AAAAAADQPI74A24TIP4WTGXWBCX6K2JPCI2Q';
+            const API_URL = 'https://raw.githubusercontent.com/rakibulnahin/promptfest/refs/heads/main/data.json';
             const MAX_RETRIES = 5;
 
             // Helper function for exponential backoff delay

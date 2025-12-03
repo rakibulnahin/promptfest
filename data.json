@@ -3,30 +3,37 @@
     "location": "13 Fairmount Street Lakemba NSW Australia",
     "type": "House",
     "price": "600 per week",
-    "description": "2 bed room house, 1 shower and washroom combined, Kitchen space."
+    "description": "2 bed room house, 1 shower and washroom combined, Kitchen space.",
+    "cover_letter": "Dear Property Manager, \n\nI am writing to express my strong interest in the two-bedroom house at 13 Fairmount Street, Lakemba. The property is ideally suited for my needs as a quiet, professional tenant. I have an excellent rental history, consistently paying rent on time and taking pride in maintaining a clean home. I am currently employed full-time, ensuring financial stability for the $600 per week rent. I am prepared to sign a 12-month lease immediately and have all necessary documentation ready. I look forward to inspecting the property and can provide excellent references upon request."
   },
   {
     "location": "17 Fairmount Street Lakemba NSW Australia",
     "type": "Apartment",
     "price": "830 per week",
-    "description": "2 bed room house, 2 washroom, 1 Shower room, Kitchen space, Living space."
+    "description": "2 bed room house, 2 washroom, 1 Shower room, Kitchen space, Living space.",
+    "cover_letter": "Dear Property Manager, \n\nI am very keen to apply for the spacious two-bedroom apartment at 17 Fairmount Street, Lakemba. The layout with multiple facilities is perfect for a professional couple who value comfort. I am a stable, long-term tenant with a strong credit history and verifiable income to comfortably meet the $830 per week rent. We assure you we will treat the property with the utmost care, reporting any maintenance issues promptly. We are ready to move quickly and would appreciate the chance to view the apartment at your earliest convenience."
   },
   {
     "location": "25 Main Street Sydney NSW Australia",
     "type": "Studio",
     "price": "450 per week",
-    "description": "Compact studio with kitchenette and separate bathroom, perfect for one."
+    "description": "Compact studio with kitchenette and separate bathroom, perfect for one.",
+    "cover_letter": "Dear Property Manager, \n\nI am writing to apply for the compact studio apartment at 25 Main Street, Sydney. As a single, full-time working professional, the central location and manageable size are exactly what I am seeking. I am a non-smoker with no pets and a proven track record of being a quiet, respectful, and tidy tenant. I have a stable income that easily covers the $450 per week rent and am looking for a long-term lease. I have all necessary documentation prepared for a swift application process and am eager to secure this central property."
   },
   {
     "location": "1/10 Green Lane Parramatta NSW Australia",
     "type": "Shared Room",
     "price": "250 per week",
-    "description": "Single bed in a shared 4-bedroom apartment, all utilities included."
+    "description": "Single bed in a shared 4-bedroom apartment, all utilities included.",
+    "posted": "28",
+    "cover_letter": "Dear Property Manager/Lessor, \n\nI am interested in the single bed in the shared apartment at 1/10 Green Lane, Parramatta. I am a respectful, friendly, and reliable student/young professional who is accustomed to shared living environments. I understand the importance of cleanliness and communal respect. My stipend/income reliably covers the $250 per week rent, including utilities. I am quiet, focused, and would be a considerate flatmate. Please accept my application and let me know when I can arrange a time to view the room and meet any current occupants."
   },
   {
     "location": "39 Coastal Drive Bondi NSW Australia",
     "type": "House",
     "price": "1200 per week",
-    "description": "Luxurious 3-bedroom beach house with ocean views and private parking."
+    "description": "Luxurious 3-bedroom beach house with ocean views and private parking.",
+    "posted": "15",
+    "cover_letter": "Dear Property Manager, \n\nWe are submitting our application for the exquisite 3-bedroom beach house at 39 Coastal Drive, Bondi. As highly established professionals, my family and I are seeking a premium, long-term residence. We possess exceptional financial references, with verifiable income that comfortably supports the $1200 per week rental rate, and a flawless rental history in high-end properties. We are committed to maintaining the property to the highest standard. We look forward to arranging a private viewing and securing this beautiful home."
   }
 ]

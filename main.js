@@ -38,10 +38,7 @@ window.addEventListener('load', updateHeroOnScroll);
 document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('inquiryForm');
             const messageBox = document.getElementById('messageBox');
-            const responseDiv = document.getElementById('response');
-            
-    
-
+            const responseDiv = document.getElementById('response');        
             // Sample JSON data mimicking an API response
             const API_URL = 'https://raw.githubusercontent.com/rakibulnahin/promptfest/refs/heads/main/data.json';
             console.log(API_URL);
@@ -101,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 responseDiv.classList.remove('hidden'); // Show the results container
+
             };
 
 
@@ -165,3 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.addEventListener('submit', handleSubmit);
             }
         });
+
+
+
+        // https://api-f1db6c.stack.tryrelevance.com/latest/agents/hooks/custom-trigger/f3d60ef1-5dcd-480a-bf9f-d1a890715a17/3e8eeeb5-fbab-4800-9361-bdddf11a653b

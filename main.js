@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <h3 class="text-base font-semibold text-slate-900 mb-1">${item.location}</h3>
                         <p class="text-sm text-slate-500">${item.description}</p>
+                        <br/>
+                        <p class="text-sm text-slate-500">${item.cover_letter}</p>
                     `;
                     responseDiv.appendChild(card);
                 });
